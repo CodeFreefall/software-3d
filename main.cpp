@@ -5,7 +5,7 @@ const int BYTES_PER_PIXEL = 4; /// red, green, blue, alpha
 const int FILE_HEADER_SIZE = 14;
 const int INFO_HEADER_SIZE = 40;
 
-void generateBitmapImage(unsigned char* image, int height, int width, char* imageFileName);
+void generateBitmapImage(unsigned char* image, int height, int width, const char* imageFileName);
 unsigned char* createBitmapFileHeader(int height, int stride);
 unsigned char* createBitmapInfoHeader(int height, int width);
 
@@ -18,7 +18,7 @@ struct canvas {
     color_type m_data[width*height];
 };
 
-void gfx_buffer_draw(canvas* l_canvas);
+void gfx_buffer_draw(canvas* l_canvas, const char* l_filename);
 
 #define GFX_GET_PIXEL_CHANNEL_R(pixel) ((pixel & 0x000000FF) >> (8 * 0))
 #define GFX_GET_PIXEL_CHANNEL_G(pixel) ((pixel & 0x0000FF00) >> (8 * 1))
@@ -105,13 +105,13 @@ int main ()
     gfx_draw_rect(&c, rect_color, 100, 100, 300, 300);
 
     // Final draw / save to file
-    gfx_buffer_draw(&c);
+    //gfx_buffer_draw(&c, "docs/examples/rect.bmp"); // For docs.
+    gfx_buffer_draw(&c, "out.bmp");
 }
 
 
-void gfx_buffer_draw(canvas* l_canvas) {
+void gfx_buffer_draw(canvas* l_canvas, const char* l_filename) {
     unsigned char image[canvas::height][canvas::width][BYTES_PER_PIXEL];
-    char* imageFileName = (char*) "bitmapImage.bmp";
     int i, j;
     for (i = 0; i < canvas::height; i++) {
         for (j = 0; j < canvas::width; j++) {
@@ -127,11 +127,11 @@ void gfx_buffer_draw(canvas* l_canvas) {
         }
     }
 
-    generateBitmapImage((unsigned char*) image, canvas::height, canvas::width, imageFileName);
+    generateBitmapImage((unsigned char*) image, canvas::height, canvas::width, l_filename);
     printf("Image generated!");
 }
 
-void generateBitmapImage (unsigned char* image, int height, int width, char* imageFileName)
+void generateBitmapImage (unsigned char* image, int height, int width, const char* imageFileName)
 {
     int widthInBytes = width * BYTES_PER_PIXEL;
 

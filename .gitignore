@@ -1,0 +1,10 @@
+*.*
+main
+
+!/docs/**
+
+!*.h
+!*.hpp
+!*.cpp
+!*.md
+!.gitignore
