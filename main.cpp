@@ -51,15 +51,19 @@ void gfx_draw_line(canvas* l_canvas, color_type c, int x1, int y1, int x2, int y
     if(y1 >= canvas::height || y1 < 0) { return; }
     if(y2 >= canvas::height || y2 < 0) { return; }
 
+    if(x1 > x2) { std::swap(x1, x2); }
+    if(y1 > y2) { std::swap(y1, y2); }
+
     auto dx = x2 - x1;
     auto dy = y2 - y1;
 
     auto x = x1;
     auto y = y1;
 
-    auto p = 2 * (dy - dx);
+    auto p = 2*dy-dx;
 
-    while(x < x1) {
+    while(x < x2) {
+        //printf("Adding pixel in x:%d, y:%d\n", x, y);
         l_canvas->m_data[gfx_canvas_index(x, y, canvas::width, canvas::height)] = c;
         if(p >= 0) {
             ++y;
@@ -99,13 +103,13 @@ int main ()
     // Render here:
 
     gfx_draw_line(&c, line_colors[0], 20, 20, 200, 200);
-    gfx_draw_line(&c, line_colors[1], 200, 200, 200, 20);
+    gfx_draw_line(&c, line_colors[1], 200, 200, 250, 20);
     gfx_draw_line(&c, line_colors[2], 200, 20, 20, 20);
 
-    gfx_draw_rect(&c, rect_color, 100, 100, 300, 300);
+    //gfx_draw_rect(&c, rect_color, 100, 100, 300, 300);
 
     // Final draw / save to file
-    //gfx_buffer_draw(&c, "docs/examples/rect.bmp"); // For docs.
+    gfx_buffer_draw(&c, "docs/examples/lines.bmp"); // For docs.
     gfx_buffer_draw(&c, "out.bmp");
 }
 

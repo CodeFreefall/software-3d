@@ -1,10 +1,16 @@
+#exclude everything initially + the main executable.
 *.*
-main
+main 
 
+#but not for anything inside the docs dir.
 !/docs/**
 
+# Gotta have git stuff still.
+!.gitignore
+
+# Also have to have some core files that make the project.
 !*.h
 !*.hpp
 !*.cpp
 !*.md
-!.gitignore
+!*.sh
