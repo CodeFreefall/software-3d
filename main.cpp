@@ -33,16 +33,20 @@ size_t gfx_canvas_index(int x, int y, int w, int h) {
     return (w*y) + x; // row-major?
 }
 
+color_type gfx_canvas_get_pixel(canvas* l_canvas, int x, int y) {
+    return l_canvas->m_data[gfx_canvas_index(x, y, canvas::width, canvas::height)];
+}
+
+void gfx_draw_point(canvas* l_canvas, color_type c, int x, int y) {
+    l_canvas->m_data[gfx_canvas_index(x, y, canvas::width, canvas::height)] = c;
+}
+
 void gfx_canvas_fill(canvas* l_canvas, color_type l_fillColor) {
     for(int y = 0; y < canvas::height; ++y) {
         for(int x = 0; x < canvas::width; ++x) {
-            l_canvas->m_data[gfx_canvas_index(x, y, canvas::width, canvas::height)] = l_fillColor;
+            gfx_draw_point(l_canvas, l_fillColor, x, y);
         }
     }
-}
-
-color_type gfx_canvas_get_pixel(canvas* l_canvas, int x, int y) {
-    return l_canvas->m_data[gfx_canvas_index(x, y, canvas::width, canvas::height)];
 }
 
 void gfx_draw_line(canvas* l_canvas, color_type c, int x1, int y1, int x2, int y2) {
@@ -64,7 +68,7 @@ void gfx_draw_line(canvas* l_canvas, color_type c, int x1, int y1, int x2, int y
 
     while(x < x2) {
         //printf("Adding pixel in x:%d, y:%d\n", x, y);
-        l_canvas->m_data[gfx_canvas_index(x, y, canvas::width, canvas::height)] = c;
+        gfx_draw_point(l_canvas, c, x, y);
         if(p >= 0) {
             ++y;
             p = p+2*dy-2*dx;
@@ -83,7 +87,7 @@ void gfx_draw_rect(canvas* l_canvas, color_type c, int x1, int y1, int x2, int y
 
     for (int y = y1; y <= y2; ++y) {
         for (int x = x1; x <= x2; ++x) {
-            l_canvas->m_data[gfx_canvas_index(x, y, canvas::width, canvas::height)] = c;
+            gfx_draw_point(l_canvas, c, x, y);
         }
     }
 }
@@ -101,7 +105,7 @@ void gfx_draw_circle(canvas* l_canvas, color_type c, int cx, int cy, int r) {
                     auto dx = x - cx;
                     auto dy = y - cy;
                     if(dx*dx + dy*dy <= r*r) {
-                        l_canvas->m_data[gfx_canvas_index(x, y, canvas::width, canvas::height)] = c;
+                        gfx_draw_point(l_canvas, c, x, y);
                     }
                 }
             }
@@ -145,17 +149,17 @@ int main ()
             gfx_make_color(0, 0, 255, 255)
         };
         gfx_canvas_fill(&c, clear_color);
-    
+
         // Render here:
-    
+
         //gfx_draw_line(&c, line_colors[0], 20, 20, 200, 200);
         //gfx_draw_line(&c, line_colors[1], 200, 200, 250, 20);
         //gfx_draw_line(&c, line_colors[2], 200, 20, 20, 20);
-    
+
         //gfx_draw_rect(&c, rect_color, 100, 100, 300, 300);
-    
+
         gfx_draw_circle(&c, gfx_make_color(255, 0, 0, 255), 250, 250, 200);
-    
+
         // Final draw / save to file
         gfx_buffer_draw(&c, "out.bmp");
     #endif
