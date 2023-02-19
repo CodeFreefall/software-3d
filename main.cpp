@@ -88,29 +88,77 @@ void gfx_draw_rect(canvas* l_canvas, color_type c, int x1, int y1, int x2, int y
     }
 }
 
+void gfx_draw_circle(canvas* l_canvas, color_type c, int cx, int cy, int r) {
+    auto x1 = cx - r;
+    auto x2 = cx + r;
+    auto y1 = cy - r;
+    auto y2 = cy + r;
+
+    for(int y = y1; y <= y2; ++y) {
+        if(0 <= y < canvas::height) {
+            for(int x = x1; x <= x2; ++x) {
+                if(0 <= x < canvas::width) {
+                    auto dx = x - cx;
+                    auto dy = y - cy;
+                    if(dx*dx + dy*dy <= r*r) {
+                        l_canvas->m_data[gfx_canvas_index(x, y, canvas::width, canvas::height)] = c;
+                    }
+                }
+            }
+        }
+    }
+}
+
 int main ()
 {
-    canvas c;
-    color_type clear_color = gfx_make_color(50, 50, 50, 255);
-    color_type rect_color = gfx_make_color(255, 0, 0, 255);
-    color_type line_colors[3] = {
-        gfx_make_color(255, 0, 0, 255),
-        gfx_make_color(0, 255, 0, 255),
-        gfx_make_color(0, 0, 255, 255)
-    };
-    gfx_canvas_fill(&c, clear_color);
+    #ifdef RUN_TESTS
+        printf("Running tests...\n");
+        canvas c;
+        color_type clear_color = gfx_make_color(50, 50, 50, 255);
+        color_type rect_color = gfx_make_color(255, 0, 0, 255);
+        color_type line_colors[3] = {
+            gfx_make_color(255, 0, 0, 255),
+            gfx_make_color(0, 255, 0, 255),
+            gfx_make_color(0, 0, 255, 255)
+        };
 
-    // Render here:
+        gfx_canvas_fill(&c, clear_color);
+        gfx_draw_line(&c, line_colors[0], 20, 20, 200, 200);
+        gfx_draw_line(&c, line_colors[1], 200, 200, 250, 20);
+        gfx_draw_line(&c, line_colors[2], 200, 20, 20, 20);
+        gfx_buffer_draw(&c, "docs/examples/lines.bmp"); // For docs.
 
-    gfx_draw_line(&c, line_colors[0], 20, 20, 200, 200);
-    gfx_draw_line(&c, line_colors[1], 200, 200, 250, 20);
-    gfx_draw_line(&c, line_colors[2], 200, 20, 20, 20);
+        gfx_canvas_fill(&c, clear_color);
+        gfx_draw_rect(&c, rect_color, 100, 100, 300, 300);
+        gfx_buffer_draw(&c, "docs/examples/rect.bmp"); // For docs.
 
-    //gfx_draw_rect(&c, rect_color, 100, 100, 300, 300);
-
-    // Final draw / save to file
-    gfx_buffer_draw(&c, "docs/examples/lines.bmp"); // For docs.
-    gfx_buffer_draw(&c, "out.bmp");
+        gfx_canvas_fill(&c, clear_color);
+        gfx_draw_circle(&c, gfx_make_color(255, 0, 0, 255), 250, 250, 200);
+        gfx_buffer_draw(&c, "docs/examples/circle.bmp"); // For docs.
+    #else
+        canvas c;
+        color_type clear_color = gfx_make_color(50, 50, 50, 255);
+        color_type rect_color = gfx_make_color(255, 0, 0, 255);
+        color_type line_colors[3] = {
+            gfx_make_color(255, 0, 0, 255),
+            gfx_make_color(0, 255, 0, 255),
+            gfx_make_color(0, 0, 255, 255)
+        };
+        gfx_canvas_fill(&c, clear_color);
+    
+        // Render here:
+    
+        //gfx_draw_line(&c, line_colors[0], 20, 20, 200, 200);
+        //gfx_draw_line(&c, line_colors[1], 200, 200, 250, 20);
+        //gfx_draw_line(&c, line_colors[2], 200, 20, 20, 20);
+    
+        //gfx_draw_rect(&c, rect_color, 100, 100, 300, 300);
+    
+        gfx_draw_circle(&c, gfx_make_color(255, 0, 0, 255), 250, 250, 200);
+    
+        // Final draw / save to file
+        gfx_buffer_draw(&c, "out.bmp");
+    #endif
 }
 
 
@@ -132,7 +180,7 @@ void gfx_buffer_draw(canvas* l_canvas, const char* l_filename) {
     }
 
     generateBitmapImage((unsigned char*) image, canvas::height, canvas::width, l_filename);
-    printf("Image generated!");
+    printf("Image generated!\n");
 }
 
 void generateBitmapImage (unsigned char* image, int height, int width, const char* imageFileName)

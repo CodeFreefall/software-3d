@@ -13,3 +13,8 @@ Here's a scuffed example of the lines being drawn:
 <img src="docs/examples/lines.bmp" width=50%>
 
 There's something wrong with the Y axis, and the formula I'm using for line rendering.
+
+
+And now, there are also circles that can be generated:
+
+<img src="docs/examples/circle.bmp" width=50%>
