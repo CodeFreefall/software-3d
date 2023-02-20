@@ -1,3 +1,3 @@
 #!/bin/bash
 
-g++ -o main main.cpp -DRUN_TESTS
+g++ -g -o main main.cpp -DRUN_TESTS

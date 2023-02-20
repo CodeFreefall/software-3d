@@ -26,7 +26,11 @@ void gfx_buffer_draw(canvas* l_canvas, const char* l_filename);
 #define GFX_GET_PIXEL_CHANNEL_A(pixel) ((pixel & 0xFF000000) >> (8 * 3))
 
 color_type gfx_make_color(channel_type r, channel_type g, channel_type b, channel_type a) {
-    return (r) | (g << (8 * 1)) | (b << (8 * 2)) | (a << (8 * 3));
+    return  (r << (8 * 0)) |
+            (g << (8 * 1)) |
+            (b << (8 * 2)) |
+            (a << (8 * 3))
+            ;
 }
 
 size_t gfx_canvas_index(int x, int y, int w, int h) {
@@ -38,7 +42,9 @@ color_type gfx_canvas_get_pixel(canvas* l_canvas, int x, int y) {
 }
 
 void gfx_draw_point(canvas* l_canvas, color_type c, int x, int y) {
-    l_canvas->m_data[gfx_canvas_index(x, y, canvas::width, canvas::height)] = c;
+    auto index = gfx_canvas_index(x, y, canvas::width, canvas::height);
+    if (index < 0 || index > canvas::width*canvas::height) { return; }
+    l_canvas->m_data[index] = c;
 }
 
 void gfx_canvas_fill(canvas* l_canvas, color_type l_fillColor) {
@@ -49,33 +55,64 @@ void gfx_canvas_fill(canvas* l_canvas, color_type l_fillColor) {
     }
 }
 
-void gfx_draw_line(canvas* l_canvas, color_type c, int x1, int y1, int x2, int y2) {
+void gfx_draw_line(canvas* l_canvas, color_type col, int x1, int y1, int x2, int y2) {
+    printf("line_call() - [%d,%d] - [%d,%d]\n", x1, y1, x2, y2);
     if(x1 >= canvas::width  || x1 < 0) { return; }
     if(x2 >= canvas::width  || x2 < 0) { return; }
     if(y1 >= canvas::height || y1 < 0) { return; }
     if(y2 >= canvas::height || y2 < 0) { return; }
 
-    if(x1 > x2) { std::swap(x1, x2); }
-    if(y1 > y2) { std::swap(y1, y2); }
+    /*
+    
+    y = k*x + c # Line formula
+
+    y1 = k*x1 + c
+    y2 = k*x2 + c
+
+    y1 - k*x1 = c # Found c
+    y2                  = k*x2 + c
+    y2                  = k*x2 + y1 - k*x1
+    y2                  = k(x2 - x1) + y1
+    y2 - y1             = k(x2 - x1)
+    (y2 - y1)/(x2 - x1) = k
+
+    k = dy / dx
+
+    */
+
+    //if(x1 > x2) { std::swap(x1, x2); }
+    //if(y1 > y2) { std::swap(y1, y2); }
 
     auto dx = x2 - x1;
     auto dy = y2 - y1;
 
-    auto x = x1;
-    auto y = y1;
+    //if((dx > dy && x1 > x2) || (dy > dx && y1 > y2)) { std::swap(x1, x2); std::swap(y1, y2); }
 
-    auto p = 2*dy-dx;
+    float k = (float)dy / (float)dx;
+    float c = y1 - (k*(float)x1);
 
-    while(x < x2) {
-        //printf("Adding pixel in x:%d, y:%d\n", x, y);
-        gfx_draw_point(l_canvas, c, x, y);
-        if(p >= 0) {
-            ++y;
-            p = p+2*dy-2*dx;
-        } else {
-            p = p+2*dy;
+    printf("[%d,%d] -> [%d,%d]\n", x1, y1, x2, y2);
+    printf("dx: %d, dy: %d, k: %f, c: %f\n", dx, dy, k, c);
+
+    if(dx == 0) {
+        for(int y = std::min(y1, y2); y <= std::max(y1, y2); ++y) {
+            gfx_draw_point(l_canvas, col, x1, y);
         }
-        ++x;
+        return;
+    }
+
+    if(std::abs(dx) >= std::abs(dy)) {
+        for(int x = x1; x <= x2; ++x) {
+            int y = k*(float)x + c;
+            //printf("Plotting [%d,%d]", x, y);
+            gfx_draw_point(l_canvas, col, x, y);
+        }
+    } else {
+        for(int y = std::min(y1, y2); y <= std::max(y1, y2); ++y) {
+            int x = ((float)y - c) / k;
+            //printf("Plotting [%d,%d]", x, y);
+            gfx_draw_point(l_canvas, col, x, y);
+        }
     }
 }
 
@@ -127,9 +164,26 @@ int main ()
         };
 
         gfx_canvas_fill(&c, clear_color);
-        gfx_draw_line(&c, line_colors[0], 20, 20, 200, 200);
-        gfx_draw_line(&c, line_colors[1], 200, 200, 250, 20);
-        gfx_draw_line(&c, line_colors[2], 200, 20, 20, 20);
+        gfx_draw_line(&c, line_colors[0], 0, 0, canvas::width - 1, canvas::height - 1);
+        gfx_draw_line(&c, line_colors[1], 0, canvas::height / 2, canvas::width - 1, canvas::height / 2);
+        gfx_draw_line(&c, line_colors[2], 0, canvas::height - 1, canvas::width - 1, 0);
+        gfx_draw_line(&c, gfx_make_color(255, 255, 255, 255), canvas::width / 2, canvas::height - 1, canvas::width / 2, 0);
+
+        gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), 0, canvas::height - 1, canvas::width / 2, 0);
+        gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), 0, canvas::height - 1, canvas::width / 4, 0);
+        gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), 0, canvas::height - 1, canvas::width / 8, 0);
+        gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), 0, canvas::height - 1, canvas::width / 16, 0);
+
+        gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width - 1, canvas::height - 1);          
+        gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width * 0.75f, canvas::height - 1);          
+        gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width * 0.85f, canvas::height - 1);          
+        gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width * 0.95f, canvas::height - 1); 
+
+        gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width - 1, canvas::height / 2);          
+        gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width - 1, canvas::height / 4);          
+        gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width - 1, canvas::height / 8);          
+        gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width - 1, canvas::height / 16);          
+
         gfx_buffer_draw(&c, "docs/examples/lines.bmp"); // For docs.
 
         gfx_canvas_fill(&c, clear_color);
@@ -141,14 +195,15 @@ int main ()
         gfx_buffer_draw(&c, "docs/examples/circle.bmp"); // For docs.
     #else
         canvas c;
-        color_type clear_color = gfx_make_color(50, 50, 50, 255);
+        color_type gray = gfx_make_color(50, 50, 50, 255);
+        color_type white = gfx_make_color(255, 255, 255, 255);
         color_type rect_color = gfx_make_color(255, 0, 0, 255);
         color_type line_colors[3] = {
             gfx_make_color(255, 0, 0, 255),
             gfx_make_color(0, 255, 0, 255),
             gfx_make_color(0, 0, 255, 255)
         };
-        gfx_canvas_fill(&c, clear_color);
+        gfx_canvas_fill(&c, gray);
 
         // Render here:
 
@@ -156,9 +211,35 @@ int main ()
         //gfx_draw_line(&c, line_colors[1], 200, 200, 250, 20);
         //gfx_draw_line(&c, line_colors[2], 200, 20, 20, 20);
 
+        {
+            gfx_draw_line(&c, line_colors[0], 0, 0, canvas::width - 1, canvas::height - 1);
+            gfx_draw_line(&c, line_colors[1], 0, canvas::height / 2, canvas::width - 1, canvas::height / 2);
+            gfx_draw_line(&c, line_colors[2], 0, canvas::height - 1, canvas::width - 1, 0);
+            gfx_draw_line(&c, gfx_make_color(255, 255, 255, 255), canvas::width / 2, canvas::height - 1, canvas::width / 2, 0);
+
+            gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), 0, canvas::height - 1, canvas::width / 2, 0);
+            gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), 0, canvas::height - 1, canvas::width / 4, 0);
+            gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), 0, canvas::height - 1, canvas::width / 8, 0);
+            gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), 0, canvas::height - 1, canvas::width / 16, 0);
+
+            gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width - 1, canvas::height - 1);          
+            gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width * 0.75f, canvas::height - 1);          
+            gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width * 0.85f, canvas::height - 1);          
+            gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width * 0.95f, canvas::height - 1); 
+
+            gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width - 1, canvas::height / 2);          
+            gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width - 1, canvas::height / 4);          
+            gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width - 1, canvas::height / 8);          
+            gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width - 1, canvas::height / 16);          
+
+            //gfx_draw_line(&c, line_colors[2], canvas::width / 2, 0, canvas::width / 2, canvas::height - 1);
+
+            //gfx_draw_line(&c, line_colors[0], 0, canvas::height / 2, canvas::width - 1, canvas::height - 1);
+        }
+
         //gfx_draw_rect(&c, rect_color, 100, 100, 300, 300);
 
-        gfx_draw_circle(&c, gfx_make_color(255, 0, 0, 255), 250, 250, 200);
+        //gfx_draw_circle(&c, gfx_make_color(255, 0, 0, 255), 250, 250, 150);
 
         // Final draw / save to file
         gfx_buffer_draw(&c, "out.bmp");

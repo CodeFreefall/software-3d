@@ -8,13 +8,10 @@ Here's a basic rectangle with a solid clear color in the background:
 
 <img src="docs/examples/rect.bmp" width=50%>
 
-Here's a scuffed example of the lines being drawn:
+Line drawing is now also fully supported:
 
 <img src="docs/examples/lines.bmp" width=50%>
 
-There's something wrong with the Y axis, and the formula I'm using for line rendering.
-
-
-And now, there are also circles that can be generated:
+Circles are fully supported as well:
 
 <img src="docs/examples/circle.bmp" width=50%>
