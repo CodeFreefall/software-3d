@@ -154,11 +154,6 @@ void gfx_draw_line(canvas* l_canvas, color_type col, int x1, int y1, int x2, int
 }
 
 void gfx_draw_rect(canvas* l_canvas, color_type c, int x1, int y1, int x2, int y2) {
-    if(x1 >= canvas::width  || x1 < 0) { return; }
-    if(x2 >= canvas::width  || x2 < 0) { return; }
-    if(y1 >= canvas::height || y1 < 0) { return; }
-    if(y2 >= canvas::height || y2 < 0) { return; }
-
     for (int y = y1; y <= y2; ++y) {
         for (int x = x1; x <= x2; ++x) {
             gfx_draw_point(l_canvas, c, x, y);
@@ -199,6 +194,8 @@ int main ()
 {
     color_type clear_color = gfx_make_color(50, 50, 50, 255);
     color_type red = gfx_make_color(255, 0, 0, 255);
+    color_type green = gfx_make_color(0, 255, 0, 255);
+    color_type blue = gfx_make_color(0, 0, 255, 255);
     
     #ifdef RUN_TESTS
         printf("Running tests...\n");
@@ -252,11 +249,18 @@ int main ()
 
 
         gfx_canvas_fill(&c, clear_color);
-        gfx_draw_rect(&c, rect_color, 100, 100, 300, 300);
+        int rect_x1 = (float)canvas::width / 4.f;
+        int rect_y1 = (float)canvas::height / 2.f;
+        int rect_x2 = rect_x1 + 150;
+        int rect_y2 = rect_y1 + 150;
+        int rect_offset = 75;
+        gfx_draw_rect(&c, red,      rect_x1,                    rect_y1, rect_x2, rect_y2);
+        gfx_draw_rect(&c, green,    rect_x1 + rect_offset,      rect_y1 - rect_offset, rect_x2 + rect_offset, rect_y2 - rect_offset);
+        gfx_draw_rect(&c, blue,     rect_x1 + rect_offset*2,    rect_y1 - rect_offset*2, rect_x2 + rect_offset*2, rect_y2 - rect_offset*2);
         gfx_buffer_draw(&c, "docs/examples/rect.bmp"); // For docs.
 
         gfx_canvas_fill(&c, clear_color);
-        gfx_draw_circle(&c, gfx_make_color(255, 0, 0, 255), 250, 250, 200);
+        gfx_draw_circle(&c, gfx_make_color(255, 0, 0, 255), canvas::width / 2, canvas::height / 2, 200);
         gfx_buffer_draw(&c, "docs/examples/circle.bmp"); // For docs.
 
         gfx_canvas_fill(&c, clear_color);
