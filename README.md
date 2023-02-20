@@ -11,6 +11,9 @@ Here's a basic rectangle with a solid clear color in the background:
 Line drawing is now also fully supported:
 
 <img src="docs/examples/lines.bmp" width=50%>
+<img src="docs/examples/color-wheel.bmp" width=50%>
+
+Full 360 degree motion.
 
 Circles are fully supported as well:
 
