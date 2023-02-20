@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <math.h>
+#include <unistd.h>
 
 const int BYTES_PER_PIXEL = 4; /// red, green, blue, alpha
 const int FILE_HEADER_SIZE = 14;
@@ -185,9 +186,54 @@ void gfx_draw_circle(canvas* l_canvas, color_type c, int cx, int cy, int r) {
 void gfx_draw_triangle_2d(canvas* l_canvas, color_type c, int x1, int y1, int x2, int y2, int x3, int y3) {
     // TODO: sort vertices by Y ASC first!
 
-    gfx_draw_line(l_canvas, c, x1, y1, x2, y2);
-    gfx_draw_line(l_canvas, c, x2, y2, x3, y3);
-    gfx_draw_line(l_canvas, c, x3, y3, x1, y1);
+    if(y1 > y2) { std::swap(y1, y2); std::swap(x1, x2); }
+    if(y2 > y3) { std::swap(y2, y3); std::swap(x2, x3); }
+    if(y1 > y3) { std::swap(y1, y3); std::swap(x1, x3); }
+
+    int dx12 = x2 - x1;
+    int dy12 = y2 - y1;
+    int dx13 = x3 - x1;
+    int dy13 = y3 - y1;
+
+    for(int y = y1; y <= y2; ++y) {
+        int s1 = dy12 ? (y - y1)*dx12/dy12 + x1 : x1;
+        int s2 = dy13 ? (y - y1)*dx13/dy13 + x1 : x1;
+
+        if(s1 > s2) { std::swap(s1, s2); }
+
+        for(int x = s1; x <= s2; ++x) {
+            gfx_draw_point(l_canvas, c, x, y);
+        }
+    }
+
+    int dx32 = x2 - x3;
+    int dy32 = y2 - y3;
+    int dx31 = x1 - x3;
+    int dy31 = y1 - y3;
+
+    for(int y = y2; y <= y3; ++y) {
+        int s1 = dy32 ? (y - y3)*dx32/dy32 + x3 : x3;
+        int s2 = dy31 ? (y - y3)*dx31/dy31 + x3 : x3;
+
+        if(s1 > s2) { std::swap(s1, s2); }
+
+        for(int x = s1; x <= s2; ++x) {
+            gfx_draw_point(l_canvas, c, x, y);
+        }
+    }
+}
+
+void gfx_draw_triangle_2d_debug(canvas* l_canvas, color_type c, int x1, int y1, int x2, int y2, int x3, int y3) {
+    // Triangle debug markers:
+    gfx_draw_triangle_2d(l_canvas, c, x1, y1, x2, y2, x3, y3);
+    auto green = gfx_make_color(0, 255, 0, 255);
+    auto white = gfx_make_color(255, 255, 255, 255);
+    gfx_draw_circle(l_canvas, green, x1, y1, 5);
+    gfx_draw_circle(l_canvas, green, x2, y2, 5);
+    gfx_draw_circle(l_canvas, green, x3, y3, 5);
+    gfx_draw_line(l_canvas, white, x1, y1, x2, y2);
+    gfx_draw_line(l_canvas, white, x2, y2, x3, y3);
+    gfx_draw_line(l_canvas, white, x3, y3, x1, y1);
 }
 
 int main ()
@@ -264,22 +310,33 @@ int main ()
         gfx_buffer_draw(&c, "docs/examples/circle.bmp"); // For docs.
 
         gfx_canvas_fill(&c, clear_color);
-        gfx_draw_triangle_2d(&c, red, 200, 150, 350, 400, 400, 200);
-        gfx_draw_triangle_2d(&c, red, 100, 50, 100, 300, 275, 400);
-        gfx_draw_triangle_2d(&c, red, 300, 25, 400, 25, 400, 175);
+        gfx_draw_triangle_2d_debug(&c, red, 200, 150, 350, 400, 400, 200);
+        gfx_draw_triangle_2d_debug(&c, red, 100, 50, 100, 300, 275, 400);
+        gfx_draw_triangle_2d_debug(&c, red, 300, 25, 400, 25, 400, 175);
+
         gfx_buffer_draw(&c, "docs/examples/triangles.bmp"); // For docs.
 
     #else
         canvas c;
         color_type gray = gfx_make_color(50, 50, 50, 255);
-        gfx_canvas_fill(&c, gray);
+        int frames = 1;
 
-        gfx_draw_triangle_2d(&c, red, 200, 150, 350, 400, 400, 200);
-        gfx_draw_triangle_2d(&c, red, 100, 50, 100, 300, 275, 400);
-        gfx_draw_triangle_2d(&c, red, 300, 25, 400, 25, 400, 175);
+        for(int d = 0; d < frames; ++d) {
+            gfx_canvas_fill(&c, gray);
 
-        // Final draw / save to file
-        gfx_buffer_draw(&c, "out.bmp");
+            int additive = d*16;
+
+            gfx_draw_triangle_2d_debug(&c, red, 200 + additive, 150, 350, 400, 400, 200);
+            gfx_draw_triangle_2d_debug(&c, red, 100 + additive, 50, 100, 300, 275, 400);
+            gfx_draw_triangle_2d_debug(&c, red, 300 + additive, 25, 400, 25, 400, 175);
+
+            // Final draw / save to file
+            gfx_buffer_draw(&c, "out.bmp");
+            
+            usleep(500000);
+        }
+
+
     #endif
 }
 
