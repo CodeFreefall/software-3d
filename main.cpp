@@ -34,6 +34,42 @@ color_type gfx_make_color(channel_type r, channel_type g, channel_type b, channe
             ;
 }
 
+color_type gfx_angle_to_color(float angle) {
+    return gfx_make_color(
+                255 * std::sin(angle),
+                255 * std::sin(angle + 2*M_PI / 3.f),
+                255 * std::sin(angle + 4*M_PI / 3.f),
+                255
+            );
+}
+
+color_type gfx_make_color_hsv(float aHue, float pSaturation, float pValue) {
+    if(!(0.f <= aHue <= 360.f)) { return 0x00; } // Invalid hue value
+    if(!(0.f <= pSaturation <= 100.f)) { return 0x00; } // Invalid saturation value
+    if(!(0.f <= pValue <= 100.f)) { return 0x00; } // Invalid value
+    if (aHue == 360.f) { aHue = 0.f; } 
+
+    float v = (pValue / 100.f);
+    float C = v * (pSaturation / 100.f);
+    float X = C * (1.f - std::abs(fmod(aHue / 60.f, 2) - 1));
+    float m = v - C;
+
+    float r,g,b = 0.f;
+
+            if(0        <= aHue < 60.f  ) { r = C;      g = X;      b = 0.f;    }
+    else    if(60.f     <= aHue < 120.f ) { r = X;      g = C;      b = 0.f;    }
+    else    if(120.f    <= aHue < 180.f ) { r = 0.f;    g = C;      b = X;      }
+    else    if(180.f    <= aHue < 240.f ) { r = 0.f;    g = X;      b = C;      }
+    else    if(240.f    <= aHue < 300.f ) { r = X;      g = 0.f;    b = C;      }
+    else    if(300.f    <= aHue < 360.f ) { r = C;      g = 0.f;    b = X;      }
+
+    r = (r+m)*255;
+    g = (g+m)*255;
+    b = (b+m)*255;
+
+    return gfx_make_color(r, g, b, 255);
+}
+
 size_t gfx_canvas_index(int x, int y, int w, int h) {
     return (w*y) + x; // row-major?
 }
@@ -57,7 +93,7 @@ void gfx_canvas_fill(canvas* l_canvas, color_type l_fillColor) {
 }
 
 void gfx_draw_line(canvas* l_canvas, color_type col, int x1, int y1, int x2, int y2) {
-    printf("line_call() - [%d,%d] - [%d,%d]\n", x1, y1, x2, y2);
+    //printf("line_call() - [%d,%d] - [%d,%d]\n", x1, y1, x2, y2);
     if(x1 >= canvas::width  || x1 < 0) { return; }
     if(x2 >= canvas::width  || x2 < 0) { return; }
     if(y1 >= canvas::height || y1 < 0) { return; }
@@ -92,8 +128,8 @@ void gfx_draw_line(canvas* l_canvas, color_type col, int x1, int y1, int x2, int
     float k = (float)dy / (float)dx;
     float c = y1 - (k*(float)x1);
 
-    printf("[%d,%d] -> [%d,%d]\n", x1, y1, x2, y2);
-    printf("dx: %d, dy: %d, k: %f, c: %f\n", dx, dy, k, c);
+    //printf("[%d,%d] -> [%d,%d]\n", x1, y1, x2, y2);
+    //printf("dx: %d, dy: %d, k: %f, c: %f\n", dx, dy, k, c);
 
     if(dx == 0) {
         for(int y = std::min(y1, y2); y <= std::max(y1, y2); ++y) {
@@ -151,6 +187,14 @@ void gfx_draw_circle(canvas* l_canvas, color_type c, int cx, int cy, int r) {
     }
 }
 
+void gfx_draw_triangle_2d(canvas* l_canvas, color_type c, int x1, int y1, int x2, int y2, int x3, int y3) {
+    // TODO: sort vertices by Y ASC first!
+
+    gfx_draw_line(l_canvas, c, x1, y1, x2, y2);
+    gfx_draw_line(l_canvas, c, x2, y2, x3, y3);
+    gfx_draw_line(l_canvas, c, x3, y3, x1, y1);
+}
+
 int main ()
 {
     color_type clear_color = gfx_make_color(50, 50, 50, 255);
@@ -193,16 +237,12 @@ int main ()
         int y1 = canvas::height / 2;
         int initialLength = 250;
         float lenInc = 0;
-        for(float a = 0; a < 360; a += 0.2f) {
+        for(float a = 0; a < 90; a += 0.1f) {
             int x2 = (float)x1 + ((float)initialLength + ((float)a * lenInc)) * std::cos((float)a);
             int y2 = (float)y1 + ((float)initialLength + ((float)a * lenInc)) * std::sin((float)a);
 
-            auto color = gfx_make_color(
-                255 * std::sin(a),
-                255 * std::sin(a + 2*M_PI / 3.f),
-                255 * std::sin(a + 4*M_PI / 3.f),
-                255
-            );
+            auto color = gfx_angle_to_color(a);
+            //auto color = gfx_make_color_hsv(a * 4, a, a);
             gfx_draw_line(&c, color, x1, y1, x2, y2);
 
             gfx_draw_point(&c, red, x2, y2);
@@ -218,36 +258,21 @@ int main ()
         gfx_canvas_fill(&c, clear_color);
         gfx_draw_circle(&c, gfx_make_color(255, 0, 0, 255), 250, 250, 200);
         gfx_buffer_draw(&c, "docs/examples/circle.bmp"); // For docs.
+
+        gfx_canvas_fill(&c, clear_color);
+        gfx_draw_triangle_2d(&c, red, 200, 150, 350, 400, 400, 200);
+        gfx_draw_triangle_2d(&c, red, 100, 50, 100, 300, 275, 400);
+        gfx_draw_triangle_2d(&c, red, 300, 25, 400, 25, 400, 175);
+        gfx_buffer_draw(&c, "docs/examples/triangles.bmp"); // For docs.
+
     #else
         canvas c;
         color_type gray = gfx_make_color(50, 50, 50, 255);
         gfx_canvas_fill(&c, gray);
 
-        int x1 = canvas::width / 2;
-        int y1 = canvas::height / 2;
-        int initialLength = 250;
-        float lenInc = 0;
-        for(float a = 0; a < 360; a += 0.2f) {
-            int x2 = (float)x1 + ((float)initialLength + ((float)a * lenInc)) * std::cos((float)a);
-            int y2 = (float)y1 + ((float)initialLength + ((float)a * lenInc)) * std::sin((float)a);
-
-            auto color = gfx_make_color(
-                255 * std::sin(a),
-                255 * std::sin(a + 2*M_PI / 3.f),
-                255 * std::sin(a + 4*M_PI / 3.f),
-                255
-            );
-            gfx_draw_line(&c, color, x1, y1, x2, y2);
-
-            gfx_draw_point(&c, red, x2, y2);
-        }
-        gfx_draw_point(&c, red, x1, y1);
-
-        gfx_draw_line(&c, red, 256, 256, 0, 256);
-
-        // Render here:
-
-
+        gfx_draw_triangle_2d(&c, red, 200, 150, 350, 400, 400, 200);
+        gfx_draw_triangle_2d(&c, red, 100, 50, 100, 300, 275, 400);
+        gfx_draw_triangle_2d(&c, red, 300, 25, 400, 25, 400, 175);
 
         // Final draw / save to file
         gfx_buffer_draw(&c, "out.bmp");

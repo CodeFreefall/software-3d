@@ -18,3 +18,7 @@ Full 360 degree motion.
 Circles are fully supported as well:
 
 <img src="docs/examples/circle.bmp" width=50%>
+
+2D triangle rendering is slightly in (just lines between vertices currently):
+
+<img src="docs/examples/triangles.bmp" width=50%>
