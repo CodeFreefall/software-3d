@@ -1,6 +1,7 @@
 #exclude everything initially + the main executable.
 *.*
-main 
+main
+tests
 
 #but not for anything inside the docs dir.
 !/docs/**

@@ -4,21 +4,28 @@ if [ "$1" ];
 then
     echo "Executing $1 branch...";
 
+    EXECUTABLE="main"
+
     if [[ "$1" == "main" ]]; then
-        sh compile.sh
-        ./main
+        g++ -g -o main main.cpp -Isrc/
     elif [[ "$1" == "debug" ]]; then
-        sh compile.sh
-        ./main
+        g++ -g -o main main.cpp -Isrc/
     elif [[ "$1" == "tests" ]]; then
-        sh compile-tests.sh
-        ./main
-    elif [[ "$1" == "execute" ]]; then
-        ./main
+        EXECUTABLE="tests"
+        g++ -g -o tests main_tests.cpp -Isrc/ -DRUN_TESTS
     else
         echo "Invalid usage of this command!";
+        exit 1
+    fi
+
+    if [ $? -eq 0 ]; then
+        echo "Compilation successful. Running the application ${EXECUTABLE}..."
+        ./$EXECUTABLE
+    else
+        echo "Compilation failed!"
     fi
 
 else
-    echo "usage: ./run [main|debug|tests|execute]";
+    echo "usage: ./run [main|debug|tests]";
+    exit 1
 fi
