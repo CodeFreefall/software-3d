@@ -77,8 +77,13 @@ int main() {
     gfx_draw_triangle_2d_debug(&c, red, 200, 150, 350, 400, 400, 200);
     gfx_draw_triangle_2d_debug(&c, red, 100, 50, 100, 300, 275, 400);
     gfx_draw_triangle_2d_debug(&c, red, 300, 25, 400, 25, 400, 175);
-
     gfx_buffer_draw(&c, "docs/examples/triangles.bmp"); // For docs.
+
+    gfx_canvas_fill(&c, clear_color);
+    gfx_draw_triangle_2d(&c, gfx_make_color(255,0,0,200), 250, 20, 100, 300, 275, 400);
+    gfx_draw_triangle_2d(&c, gfx_make_color(0,0,255,200), 300, 250, 400, 25, 75, 275);
+    gfx_draw_triangle_2d(&c, gfx_make_color(0,255,0,200), 100, 150, 350, 400, 400, 200);
+    gfx_buffer_draw(&c, "docs/examples/alpha-blending.bmp"); // For docs.
 
     return 0;
 }

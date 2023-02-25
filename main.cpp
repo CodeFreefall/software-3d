@@ -5,8 +5,8 @@ int main ()
 {
     color_type clear_color = gfx_make_color(50, 50, 50, 255);
     color_type red = gfx_make_color(255, 0, 0, 255);
-    color_type green = gfx_make_color(0, 255, 0, 255);
-    color_type blue = gfx_make_color(0, 0, 255, 255);
+    color_type green = gfx_make_color(0, 255, 0, 200);
+    color_type blue = gfx_make_color(0, 0, 255, 200);
 
     canvas c;
     color_type gray = gfx_make_color(50, 50, 50, 255);
@@ -17,9 +17,10 @@ int main ()
 
         int additive = d*16;
 
-        gfx_draw_triangle_2d_debug(&c, red, 200 + additive, 150, 350, 400, 400, 200);
-        gfx_draw_triangle_2d_debug(&c, red, 100 + additive, 50, 100, 300, 275, 400);
-        gfx_draw_triangle_2d_debug(&c, red, 300 + additive, 25, 400, 25, 400, 175);
+
+        gfx_draw_triangle_2d(&c, red, 250 + additive, 20, 100, 300, 275, 400); // Left
+        gfx_draw_triangle_2d(&c, blue, 300 + additive, 250, 400, 25, 75, 275); // Right
+        gfx_draw_triangle_2d(&c, green, 100 + additive, 150, 350, 400, 400, 200); // Middle
 
         // Final draw / save to file
         gfx_buffer_draw(&c, "out.bmp");

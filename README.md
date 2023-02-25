@@ -20,3 +20,4 @@ Basic features supported so far:
 | Full 360deg range w/ lines    | <img src="docs/examples/color-wheel.bmp" width=100%> |
 | Circles                       | <img src="docs/examples/circle.bmp" width=100%> |
 | 2D Triangles                  | <img src="docs/examples/triangles.bmp" width=100%> |
+| Color blending                | <img src="docs/examples/alpha-blending.bmp" width=100%> |

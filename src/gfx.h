@@ -15,10 +15,33 @@ unsigned char* createBitmapInfoHeader(int height, int width);
 using color_type = __uint32_t;
 using channel_type = __u_short;
 
+struct color_rgba32_i {
+    union {
+        __uint32_t uint32;
+        __u_short components[4];
+    };
+};
+
 struct canvas {
     static const int width = 512;
     static const int height = 512;
     color_type m_data[width*height];
+};
+
+struct Vector2f {
+    float x = 0.f;
+    float y = 0.f;
+};
+
+struct Vector3f {
+    float x = 0.f;
+    float y = 0.f;
+    float z = 0.f;
+};
+
+struct eye {
+    Vector3f pos;
+    Vector3f viewDir;
 };
 
 void gfx_buffer_draw(canvas* l_canvas, const char* l_filename);
@@ -80,10 +103,48 @@ color_type gfx_canvas_get_pixel(canvas* l_canvas, int x, int y) {
     return l_canvas->m_data[gfx_canvas_index(x, y, canvas::width, canvas::height)];
 }
 
+void gfx_blend_color_values(color_type& cDest, const color_type& c) {
+    unsigned short a2 = GFX_GET_PIXEL_CHANNEL_A(c);
+    if (a2 == 255) { cDest = c; return; }
+    unsigned short a1 = GFX_GET_PIXEL_CHANNEL_A(cDest);
+    if (!a1 || !a2) { return; }
+
+    unsigned short r1 = GFX_GET_PIXEL_CHANNEL_R(cDest);
+    unsigned short g1 = GFX_GET_PIXEL_CHANNEL_G(cDest);
+    unsigned short b1 = GFX_GET_PIXEL_CHANNEL_B(cDest);
+
+    unsigned short r2 = GFX_GET_PIXEL_CHANNEL_R(c);
+    unsigned short g2 = GFX_GET_PIXEL_CHANNEL_G(c);
+    unsigned short b2 = GFX_GET_PIXEL_CHANNEL_B(c);
+
+    float alpha1 = a1 / 255.f;
+    float alpha2 = a2 / 255.f;
+
+    if(a1 != 1.f || a2 != 1.f) {
+        //printf("[%.2f;%.2f]\n", a1, a2);
+    }
+
+    unsigned short r = (r2 * alpha2) + ((alpha1) * r1);
+    unsigned short g = (g2 * alpha2) + ((alpha1) * g1);
+    unsigned short b = (b2 * alpha2) + ((alpha1) * b1);
+    unsigned short a = a1;
+
+    /*float gamma = 2.2f;
+
+    r = std::pow((r / 255.f), gamma) * 255;
+    g = std::pow((g / 255.f), gamma) * 255;
+    b = std::pow((b / 255.f), gamma) * 255;
+
+    printf("[%hu;%hu;%hu;%hu]\n", r, g, b, a);*/
+
+    cDest = gfx_make_color(r,g,b,a);
+}
+
 void gfx_draw_point(canvas* l_canvas, color_type c, int x, int y) {
     auto index = gfx_canvas_index(x, y, canvas::width, canvas::height);
     if (index < 0 || index > canvas::width*canvas::height) { return; }
-    l_canvas->m_data[index] = c;
+    //l_canvas->m_data[index] = c;00
+    gfx_blend_color_values(l_canvas->m_data[index], c);
 }
 
 void gfx_canvas_fill(canvas* l_canvas, color_type l_fillColor) {
