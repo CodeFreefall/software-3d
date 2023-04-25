@@ -120,8 +120,8 @@ void gfx_blend_color_values(color_type& cDest, const color_type& c) {
     float alpha1 = a1 / 255.f;
     float alpha2 = a2 / 255.f;
 
-    if(a1 != 1.f || a2 != 1.f) {
-        //printf("[%.2f;%.2f]\n", a1, a2);
+    if(alpha1 != 1.f || alpha2 != 1.f) {
+        printf("[%.2f;%.2f]\n", alpha1, alpha2);
     }
 
     unsigned short r = (r2 * alpha2) + ((alpha1) * r1);
@@ -140,19 +140,24 @@ void gfx_blend_color_values(color_type& cDest, const color_type& c) {
     cDest = gfx_make_color(r,g,b,a);
 }
 
-void gfx_draw_point(canvas* l_canvas, color_type c, int x, int y) {
+void gfx_draw_point(canvas* l_canvas, color_type c, int x, int y, bool overwrite = false) {
     auto index = gfx_canvas_index(x, y, canvas::width, canvas::height);
     if (index < 0 || index > canvas::width*canvas::height) { return; }
-    //l_canvas->m_data[index] = c;00
-    gfx_blend_color_values(l_canvas->m_data[index], c);
+    //l_canvas->m_data[index] = c;
+    if(!overwrite) { gfx_blend_color_values(l_canvas->m_data[index], c); }
+    else { l_canvas->m_data[index] = c; }
 }
 
-void gfx_canvas_fill(canvas* l_canvas, color_type l_fillColor) {
-    for(int y = 0; y < canvas::height; ++y) {
-        for(int x = 0; x < canvas::width; ++x) {
-            gfx_draw_point(l_canvas, l_fillColor, x, y);
+void gfx_draw_rect(canvas* l_canvas, color_type c, int x1, int y1, int x2, int y2, bool overwrite = false) {
+    for (int y = y1; y <= y2; ++y) {
+        for (int x = x1; x <= x2; ++x) {
+            gfx_draw_point(l_canvas, c, x, y, overwrite);
         }
     }
+}
+
+void gfx_canvas_clear(canvas* l_canvas, color_type l_fillColor) {
+    gfx_draw_rect(l_canvas, l_fillColor, 0, 0, canvas::width-1, canvas::height-1, true);
 }
 
 void gfx_draw_line(canvas* l_canvas, color_type col, int x1, int y1, int x2, int y2) {
@@ -212,14 +217,6 @@ void gfx_draw_line(canvas* l_canvas, color_type col, int x1, int y1, int x2, int
             int x = ((float)y - c) / k;
             //printf("Plotting [%d,%d]", x, y);
             gfx_draw_point(l_canvas, col, x, y);
-        }
-    }
-}
-
-void gfx_draw_rect(canvas* l_canvas, color_type c, int x1, int y1, int x2, int y2) {
-    for (int y = y1; y <= y2; ++y) {
-        for (int x = x1; x <= x2; ++x) {
-            gfx_draw_point(l_canvas, c, x, y);
         }
     }
 }

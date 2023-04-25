@@ -17,7 +17,7 @@ int main() {
         gfx_make_color(0, 0, 255, 255)
     };
 
-    gfx_canvas_fill(&c, clear_color);
+    gfx_canvas_clear(&c, clear_color);
     gfx_draw_line(&c, line_colors[0], 0, 0, canvas::width - 1, canvas::height - 1);
     gfx_draw_line(&c, line_colors[1], 0, canvas::height / 2, canvas::width - 1, canvas::height / 2);
     gfx_draw_line(&c, line_colors[2], 0, canvas::height - 1, canvas::width - 1, 0);
@@ -39,7 +39,7 @@ int main() {
     gfx_draw_line(&c, gfx_make_color(128, 255, 128, 255), canvas::width / 2, 0, canvas::width - 1, canvas::height / 16);          
     gfx_buffer_draw(&c, "docs/examples/lines.bmp"); // For docs.
 
-    gfx_canvas_fill(&c, clear_color);
+    gfx_canvas_clear(&c, clear_color);
     int x1 = canvas::width / 2;
     int y1 = canvas::height / 2;
     int initialLength = 250;
@@ -58,7 +58,7 @@ int main() {
     gfx_buffer_draw(&c, "docs/examples/color-wheel.bmp"); // For docs.
 
 
-    gfx_canvas_fill(&c, clear_color);
+    gfx_canvas_clear(&c, clear_color);
     int rect_x1 = (float)canvas::width / 4.f;
     int rect_y1 = (float)canvas::height / 2.f;
     int rect_x2 = rect_x1 + 150;
@@ -69,17 +69,17 @@ int main() {
     gfx_draw_rect(&c, blue,     rect_x1 + rect_offset*2,    rect_y1 - rect_offset*2, rect_x2 + rect_offset*2, rect_y2 - rect_offset*2);
     gfx_buffer_draw(&c, "docs/examples/rect.bmp"); // For docs.
 
-    gfx_canvas_fill(&c, clear_color);
+    gfx_canvas_clear(&c, clear_color);
     gfx_draw_circle(&c, gfx_make_color(255, 0, 0, 255), canvas::width / 2, canvas::height / 2, 200);
     gfx_buffer_draw(&c, "docs/examples/circle.bmp"); // For docs.
 
-    gfx_canvas_fill(&c, clear_color);
+    gfx_canvas_clear(&c, clear_color);
     gfx_draw_triangle_2d_debug(&c, red, 200, 150, 350, 400, 400, 200);
     gfx_draw_triangle_2d_debug(&c, red, 100, 50, 100, 300, 275, 400);
     gfx_draw_triangle_2d_debug(&c, red, 300, 25, 400, 25, 400, 175);
     gfx_buffer_draw(&c, "docs/examples/triangles.bmp"); // For docs.
 
-    gfx_canvas_fill(&c, clear_color);
+    gfx_canvas_clear(&c, clear_color);
     gfx_draw_triangle_2d(&c, gfx_make_color(255,0,0,200), 250, 20, 100, 300, 275, 400);
     gfx_draw_triangle_2d(&c, gfx_make_color(0,0,255,200), 300, 250, 400, 25, 75, 275);
     gfx_draw_triangle_2d(&c, gfx_make_color(0,255,0,200), 100, 150, 350, 400, 400, 200);
